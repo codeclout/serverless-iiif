@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 const URI = require('uri-js');
-const util = require('util');
+// const util = require('util');
 
 // IIIF RESOLVERS
 
@@ -17,29 +17,44 @@ const s3Stream = async (location, callback) => {
   }
 };
 
+// Create input stream from http location
+const httpStream = async (location, callback) => {
+  const result = await fetch(location);
+  return await callback(result.body);
+};
+
 // Compute default stream location from ID
 const defaultStreamLocation = (id) => {
-  const sourceBucket = process.env.tiffBucket;
-  const resolverTemplate = process.env.resolverTemplate || '%s.tif';
-  const replacementCount = resolverTemplate.match(/%.*?s/g).length;
-  const args = new Array(replacementCount).fill(id);
-  const key = util.format(resolverTemplate, ...args);
-
-  return { Bucket: sourceBucket, Key: key };
+  return `https://collections.nlm.nih.gov/jp2/${id}`;
+  // return `http://imageserver/path/to/${id}.tif`;
 };
+
+// No metadata to read dimensions from; tell IIIF server to probe for size
+const dimensionRetriever = async () => null;
+
+// Compute default stream location from ID
+// const defaultStreamLocation = (id) => {
+//   const sourceBucket = process.env.tiffBucket;
+//   const resolverTemplate = process.env.resolverTemplate || '%s.tif';
+//   const replacementCount = resolverTemplate.match(/%.*?s/g).length;
+//   const args = new Array(replacementCount).fill(id);
+//   const key = util.format(resolverTemplate, ...args);
+
+//   return { Bucket: sourceBucket, Key: key };
+// };
 
 // Retrieve dimensions from S3 metadata
-const dimensionRetriever = async (location) => {
-  const s3 = new AWS.S3();
-  const obj = await s3.headObject(location).promise();
-  if (obj.Metadata.width && obj.Metadata.height) {
-    return {
-      width: parseInt(obj.Metadata.width, 10),
-      height: parseInt(obj.Metadata.height, 10)
-    };
-  }
-  return null;
-};
+// const dimensionRetriever = async (location) => {
+//   const s3 = new AWS.S3();
+//   const obj = await s3.headObject(location).promise();
+//   if (obj.Metadata.width && obj.Metadata.height) {
+//     return {
+//       width: parseInt(obj.Metadata.width, 10),
+//       height: parseInt(obj.Metadata.height, 10)
+//     };
+//   }
+//   return null;
+// };
 
 // Preflight resolvers
 const parseLocationHeader = (event) => {
