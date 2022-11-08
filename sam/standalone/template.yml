@@ -85,7 +85,7 @@ Resources:
       LayerName:
         Fn::Sub: "${AWS::StackName}-dependencies"
       Description: Dependencies for IIIF app
-      ContentUri: ../../dependencies
+      ContentUri: s3://nlm-sbox-ab-django-app-iiif-us-east-1/serverless/iiif-deps-2022-11-07.zip
       CompatibleRuntimes:
         - nodejs16.x
       LicenseInfo: "Apache-2.0"
@@ -115,7 +115,7 @@ Resources:
           MaxAge: 3600
       Timeout:
         Ref: IiifLambdaTimeout
-      CodeUri: ../../src
+      CodeUri: s3://nlm-sbox-ab-django-app-iiif-us-east-1/serverless/iiif-app-2022-11-07.zip
       Layers:
         - Ref: Dependencies
         - Fn::If:
