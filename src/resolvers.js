@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 const URI = require('uri-js');
-// const util = require('util');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 // IIIF RESOLVERS
 
@@ -20,13 +20,14 @@ const s3Stream = async (location, callback) => {
 // Create input stream from http location
 const httpStream = async (location, callback) => {
   const result = await fetch(location);
+
+  if (!result.ok) throw new Error(`unexpected response ${result.statusText}`);
   return await callback(result.body);
 };
 
 // Compute default stream location from ID
 const defaultStreamLocation = (id) => {
   return `https://collections.nlm.nih.gov/jp2/${id}`;
-  // return `http://imageserver/path/to/${id}.tif`;
 };
 
 // No metadata to read dimensions from; tell IIIF server to probe for size
@@ -92,7 +93,7 @@ const preflightResolver = (event) => {
 const standardResolver = () => {
   return {
     streamResolver: async ({id, baseUrl}, callback) => {
-      return s3Stream(defaultStreamLocation(id), callback);
+      return httpStream(defaultStreamLocation(id), callback);
     },
     dimensionResolver: async ({id, baseUrl}) => {
       return dimensionRetriever(defaultStreamLocation(id));
